@@ -1,0 +1,27 @@
+Package: flowUtilities
+Title: Utility Functions for Flow Cytometry Analysis Using flowWorkspace
+Version: 1.0.0
+Authors@R: 
+    person("John", "Edgar", email="edgarjohnmichael@gmail.com", role = c("aut", "cre"))
+Description: Functions for working with GatingSets but with some compatiblity
+  with flowSets and cytosets. Includes functions to extract and add metadata from .fcs filenames,
+  apply compensation, construct gates, and build plots. Designed to minimize time spent writing code.
+License: file LICENSE
+Imports:
+  flowCore,
+  flowWorkspace,
+  flowStats,
+  ggcyto,
+  ggplot2,
+  ggridges,
+  gridExtra,
+  stats,
+  stringr
+Suggests:
+  knitr,
+  flowAI,
+  openCyto,
+  rmarkdown
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
