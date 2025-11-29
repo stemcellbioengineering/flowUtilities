@@ -13,12 +13,13 @@ plot_grid(
   subset = "root",
   facet_by = NULL,
   n_bins = 128,
-  n_cols = 3,
+  ncol = 3,
   fill_density = "gray",
   fill_alpha = 0.5,
   stat_loc = "gate",
   stat_digits = 1,
-  stat_pos = 0.5
+  stat_pos = 0.5,
+  ...
 )
 }
 \arguments{
@@ -38,7 +39,7 @@ plot_grid(
 
 \item{n_bins}{Number of hexagon bins for 2D plots (default: 128)}
 
-\item{n_cols}{Number of columns for plot grid (default: 3)}
+\item{ncol}{Number of columns for plot grid (default: 3)}
 
 \item{fill_density}{Fill color for 1D density histograms (default: "gray"}
 
@@ -49,6 +50,8 @@ plot_grid(
 \item{stat_digits}{Number of decimal points to plot for gate statistics (default: 1)}
 
 \item{stat_pos}{Fine-tunes gate statistics position on plot (default: 0.5)}
+
+\item{...}{Additional arguments passed to \code{\link[=plot_theme]{plot_theme()}}}
 }
 \value{
 A ggcyto or ggplot2 plot object

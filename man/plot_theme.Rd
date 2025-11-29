@@ -2,7 +2,8 @@
 % Please edit documentation in R/plots.R
 \name{plot_theme}
 \alias{plot_theme}
-\title{A custom ggplot2 theme builder}
+\title{A custom ggplot2 theme builder. Used by all \code{flowUtilities} plotting functions
+and can be added to new \code{ggcyto}/\code{ggplot2} plots using \code{p <- p + plot_theme()}.}
 \usage{
 plot_theme(
   font_size = 10,
@@ -13,7 +14,8 @@ plot_theme(
   bottom_margin = 0.25,
   right_margin = 0.1,
   left_margin = 0.25,
-  margin_units = "cm"
+  margin_units = "cm",
+  device_font = "win"
 )
 }
 \arguments{
@@ -34,10 +36,13 @@ plot_theme(
 \item{left_margin}{Left margin (default: 0.25 cm)}
 
 \item{margin_units}{Margin units (default: "cm")}
+
+\item{device_font}{Loads font libraries from the users computer. See the \link[extrafont:loadfonts]{extrafont::loadfonts} documentation for details}
 }
 \value{
 A ggplot2 theme object
 }
 \description{
-A custom ggplot2 theme builder
+A custom ggplot2 theme builder. Used by all \code{flowUtilities} plotting functions
+and can be added to new \code{ggcyto}/\code{ggplot2} plots using \code{p <- p + plot_theme()}.
 }

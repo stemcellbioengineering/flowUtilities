@@ -7,7 +7,7 @@
 filter_channels(fs, keep = NULL, exclude = NULL, verbose = TRUE)
 }
 \arguments{
-\item{fs}{The flowSet to filter.}
+\item{fs}{The flowSet, flowFrame, cytoset, or cytoframe object}
 
 \item{keep}{A regular expression used to select channels to keep in the flowSet.}
 
@@ -26,5 +26,4 @@ Filter channels (column names) in flowSet using regular expressions.
 # Keep only scatter and time channels
 fs <- filter_channels(fs, keep="FSC|SSC|Time")
 }
-
 }

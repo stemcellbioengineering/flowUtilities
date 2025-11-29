@@ -2,10 +2,8 @@
 % Please edit documentation in R/utils.R
 \name{get_marker_names}
 \alias{get_marker_names}
-\title{Returns the marker names contained in flowSet.
-The marker names are typically user-defined when the .fcs files are created and can include descriptive names like "CD45 Y585-PE-A".
-You can call markernames(fs) to view the marker names contained in the flowSet.
-Does not alter scatter (FCS-A, SSC-A, etc.) or time channels.}
+\title{Returns the marker names stored in .fcs files.
+The marker names are typically user-defined when the .fcs files are created and can include descriptive names like "CD45 Y585-PE-A".}
 \usage{
 get_marker_names(
   fs,
@@ -34,12 +32,15 @@ A list of marker names for their corresponding channels. This can be applied to 
 using \code{\link[=set_channels_from_markers]{set_channels_from_markers()}}.
 }
 \description{
+You can call markernames(fs) to view the marker names.
+Does not alter scatter (FCS-A, SSC-A, etc.) or time channels.
+}
+\details{
 Optionally, regular expression(s) can be provided to extract substrings from marker names.
 When multiple patterns are provided, the substrings will be concatenated together in the order provided.
 This can be used to avoid duplicate channel names. For example, when both area and height are recorded for a given marker, it may be useful to distinguish them using the pattern "-A|-H".
 If the provided pattern does not match, the full marker name is returned unless partial matches are permitted.
-}
-\details{
+
 If desired, a default name can be provided for marker names without a match. This can be used to label unused channels
 }
 \examples{

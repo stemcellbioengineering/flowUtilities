@@ -2,14 +2,14 @@
 % Please edit documentation in R/utils.R
 \name{set_channels_from_markers}
 \alias{set_channels_from_markers}
-\title{Set channels (column names) from the marker names in a flowSet. The original channel names
+\title{Set channels (column names) from the marker names in a flowSet or GatingSet. The original channel names
 become the marker names. The marker names can be provided as a list, such as what is
 returned from \code{\link[=get_marker_names]{get_marker_names()}}. If not provided, the marker names contained in the flowSet are used.}
 \usage{
 set_channels_from_markers(fs, markers = NULL)
 }
 \arguments{
-\item{fs}{A flowSet object}
+\item{fs}{A flowSet or GatingSet object}
 
 \item{markers}{A list of marker names to set as channel names}
 }
@@ -17,7 +17,7 @@ set_channels_from_markers(fs, markers = NULL)
 The flowSet with updated channel and marker names
 }
 \description{
-Set channels (column names) from the marker names in a flowSet. The original channel names
+Set channels (column names) from the marker names in a flowSet or GatingSet. The original channel names
 become the marker names. The marker names can be provided as a list, such as what is
 returned from \code{\link[=get_marker_names]{get_marker_names()}}. If not provided, the marker names contained in the flowSet are used.
 }

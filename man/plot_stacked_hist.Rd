@@ -10,7 +10,10 @@ plot_stacked_hist(
   channels,
   stack_by = "name",
   subset = "root",
-  alpha = 0.5
+  ncol = NULL,
+  nrow = NULL,
+  alpha = 0.5,
+  ...
 )
 }
 \arguments{
@@ -22,7 +25,13 @@ plot_stacked_hist(
 
 \item{subset}{A gate to filter data before plotting (default: "root)}
 
+\item{ncol}{Number of columns}
+
+\item{nrow}{Number of rows}
+
 \item{alpha}{Density transparency}
+
+\item{...}{Additional arguments passed to \code{\link[=plot_theme]{plot_theme()}}}
 }
 \value{
 A ggplot2 gtable object

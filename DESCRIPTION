@@ -1,27 +1,35 @@
 Package: flowUtilities
 Title: Utility Functions for Flow Cytometry Analysis Using flowWorkspace
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: 
     person("John", "Edgar", email="edgarjohnmichael@gmail.com", role = c("aut", "cre"))
-Description: Functions for working with GatingSets but with some compatiblity
-  with flowSets and cytosets. Includes functions to extract and add metadata from .fcs filenames,
-  apply compensation, construct gates, and build plots. Designed to minimize time spent writing code.
+Description: flowUtilities is an R package that simplifies flow cytometry data
+    analysis by providing convenient wrapper functions and utilities for common
+    tasks in the flow cytometry analysis workflow. The package builds on popular
+    libraries within the Bioconductor ecosystem to streamline data import, gating,
+    visualization, and statistical analysis..
 License: file LICENSE
 Imports:
-  flowCore,
-  flowWorkspace,
-  flowStats,
-  ggcyto,
-  ggplot2,
-  ggridges,
-  gridExtra,
-  stats,
-  stringr
+    flowCore,
+    flowWorkspace,
+    flowStats,
+    ggcyto,
+    ggplot2,
+    ggridges,
+    gridExtra,
+    stats,
+    methods,
+    stringr,
+    extrafont
 Suggests:
-  knitr,
-  flowAI,
-  openCyto,
-  rmarkdown
+    knitr,
+    flowAI,
+    openCyto,
+    rmarkdown
+VignetteBuilder: knitr
 Encoding: UTF-8
+URL: http://www.github.com/stemcellbioengineering/flowUtilities
+BugReports: http://www.github.com/stemcellbioengineering/flowUtilities/issues
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
+    

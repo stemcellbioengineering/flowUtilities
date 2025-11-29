@@ -1,26 +1,28 @@
 
 
-#' Estimate the logicle transform parameters for a GatingSet. Uses all the samples
-#' within the GatingSet and returns a [flowWorkspace::transformerList] object that
-#' can be applied to the GatingSet using [flowWorkspace::transform].
-#' 
-#' @param gs A GatingSet object
+#' Estimate the logicle transform parameters for a GatingSet or GatingHierarchy.
+#' Uses all the samples within the GatingSet and returns a [flowWorkspace::transformerList] object that
+#' can be applied using [flowWorkspace::transform].
+#'
+#' @param gs A GatingSet or GatingHierarchy object
 #' @param channels Character vector of channels for which the transformation is to be estimated
 #' @param m The full width of the transformed display in asymptotic decades. Should be greater than zero
-#' 
 #' @returns A [flowWorkspace::transformerList] object
-#' 
+#' @import flowWorkspace
+#' @importFrom methods as
 #' @export
-estimateLogicleGS <- function(gs, channels, m = 4.5){
-  if (!inherits(gs, "GatingSet")){
-    stop("Argument 'gs' must be a GatingSet object")
+estimateLogicleTransform <- function(gs, channels, m = 4.5){
+  if (inherits(gs, "GatingSet")){
+    # Merge into a single sample (GatingHierarchy)
+    # Using estimateLogicle with flowFrame will raise error when added to GatingSet
+    gh <- as(gs,"GatingHierarchy")
+  }else if (inherits(gs, "GatingHierarchy")){
+    gh <- gs
+  }else{
+    stop("Argument 'gs' must be a GatingSet or GatingHierarchy object")
   }
-  # Merge into a single sample (GatingHierarchy)
-  # Using estimateLogicle with flowFrame will raise error when added to GatingSet
-  gh <- as(gs,"GatingHierarchy")
-  
   # Estimate transform
-  transList <- flowWorkspace::estimateLogicle(gh, channels, m = m)
+  transList <- estimateLogicle(gh, channels, m = m)
 
   return (transList)
 }

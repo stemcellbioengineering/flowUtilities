@@ -1,11 +1,11 @@
 
 
-#' Constructs a singlet gate by applying a robust linear model with [MASS::rlm].
-#' 
-#' A convenience function for [flowStats::singletGate] that constructs a gate for 
+#' Constructs a singlet gate by applying a robust linear model.
+#'
+#' A convenience function for [flowStats::singletGate] that constructs a gate for
 #' each sample within a GatingSet, flowSet, or cytoset and returns a list of gates.
 #' Additionally, when a GatingSet is provided, the singlet gate can be constructed after filtering by an existing gate.
-#' 
+#'
 #' @param gs A GatingSet, flowSet, or cytoset object
 #' @param area Character giving the channel name that records the signal intensity as peak area
 #' @param height Character giving the channel name that records the signal intensity as peak height
@@ -17,19 +17,20 @@
 #' @param gateId Character specifying the name for the gate that is returned
 #' @param maxit the limit on the number of IWLS iterations passed to [MASS::rlm]
 #' @param ... Additional arguments passed to [MASS::rlm]
-#' 
 #' @returns Returns a list of [flowCore::polygonGate] objects to use for filtering
-#' 
 #' @examples
 #' \dontrun{
 #' # Construct gates after filtering by existing "NonDebris" gate
-#' gates <- singletsGates(gs, area = "FSC-A", height = "FSC-H", parentId = "NonDebris", gateId = "Singlets")
-#' 
+#' gates <- autoSingletGate(gs, area = "FSC-A", height = "FSC-H", parentId = "NonDebris", gateId = "Singlets")
+#'
 #' # Add gate to GatingSet
 #' gs_pop_add(gs, gates, parent = "NonDebris")
 #' }
+#' @importFrom flowStats singletGate
+#' @import flowCore
+#' @import flowWorkspace
 #' @export
-singletsGates <- function(gs,
+autoSingletGate <- function(gs,
                           area="FSC-A",
                           height="FSC-H",
                           sidescatter=NULL,
@@ -50,13 +51,13 @@ singletsGates <- function(gs,
     # Returns a cytoset
     gs <- gs_pop_get_data(gs, parentId)
   }
-  
+
   if (!(area %in% colnames(gs)) | !(height %in% colnames(gs))){
     stop(sprintf("One of channels %s or %s not in dataset", area, height))
   }
-  
+
   # Estimate per sample using RLM
-  gates <- fsApply(gs, function(cf) {flowStats::singletGate(cf, 
+  gates <- fsApply(gs, function(cf) {singletGate(cf,
                                      area=area,
                                      height=height,
                                      #sidescatter=sidescatter,
@@ -69,14 +70,14 @@ singletsGates <- function(gs,
                                      )})
   return (gates)
 }
-  
+
 #' Automated gating of elliptical cell populations in 2D.
-#' 
-#' A convenience function for [flowStats::lymphGate] that constructs a gate for 
+#'
+#' A convenience function for [flowStats::lymphGate] that constructs a gate for
 #' each sample within a GatingSet, flowSet, or cytoset and returns a list of gates.
-#' Additionally, when a GatingSet is provided, the gate can be constructed after 
+#' Additionally, when a GatingSet is provided, the gate can be constructed after
 #' filtering by an existing gate.
-#' 
+#'
 #' @param gs A GatingSet, flowSet, or cytoset object
 #' @param x Character providing a channel name
 #' @param y Character providing a channel name
@@ -86,19 +87,20 @@ singletsGates <- function(gs,
 #' @param parentId Character specify the parent node name used to filter the data. Only used when a GatingSet is provided (by default, the 'root' node, no filtering is performed)
 #' @param gateId Character specifying the name for the gate that is returned
 #' @param ... Additional arguments passed to [flowStats::lymphGate]
-#' 
 #' @returns Returns a list of [flowCore::ellipsoidGate] objects to use for filtering
-#' 
 #' @examples
 #' \dontrun{
 #' # Construct gates after filtering by existing "Singlets" gate
-#' gates <- lymphocyteGates(gs, x = "FSC-A", y = "SSC-A", parentId = "Singlets", gateId = "Lymphocytes")
-#' 
+#' gates <- autoLymphGate(gs, x = "FSC-A", y = "SSC-A", parentId = "Singlets", gateId = "Lymphocytes")
+#'
 #' # Add gate to GatingSet
 #' gs_pop_add(gs, gates, parent = "Singlets")
 #' }
+#' @importFrom flowStats lymphGate
+#' @import flowCore
+#' @import flowWorkspace
 #' @export
-lymphocyteGates <- function(gs,
+autoLymphGate <- function(gs,
                           x="FSC-A",
                           y="SSC-A",
                           preselection=NULL,
@@ -117,19 +119,19 @@ lymphocyteGates <- function(gs,
     # Returns a cytoset
     gs <- gs_pop_get_data(gs, parentId)
   }
-  
+
   if (!(x %in% colnames(gs)) | !(y %in% colnames(gs))){
     stop(sprintf("One of channels %s or %s not in dataset", x, y))
   }
-  
+
   # Estimate per sample using lymphGate
-  gates <- flowStats::lymphGate(gs,
-                                channels = c(x,y),
-                                preselection = preselection,
-                                scale = scale,
-                                bwFac = bwFac,
-                                filterId=gateId,
-                                ...)
+  gates <- lymphGate(gs,
+                     channels = c(x,y),
+                     preselection = preselection,
+                     scale = scale,
+                     bwFac = bwFac,
+                     filterId=gateId,
+                     ...)
 
   return (gates)
 }
@@ -138,7 +140,7 @@ lymphocyteGates <- function(gs,
 #' Requires the phenoData to contain a column 'ctrlId', containing names of control
 #' samples that match the channel names. This allows the function to select the correct
 #' control for calculating the quantile. The controls are usually fluorescent minus one (FMO).
-#' 
+#'
 #' @param gs A GatingSet object
 #' @param x Character providing a channel name
 #' @param y Character providing a channel name
@@ -146,25 +148,25 @@ lymphocyteGates <- function(gs,
 #' @param ctrlId Character name of column in phenoData matching control samples to channel names (default: "fmo")
 #' @param parentId Character specify the parent node name used to filter the data (by default, the 'root' node, no filtering is performed)
 #' @param gateId Character specifying the name for the gate that is returned
-#' 
 #' @returns A list containing a [flowCore::quadGate] object accessible via $gate and a character vector of quadrant names accessible via $names.
-#' 
 #' @examples
 #' \dontrun{
 #' # Construct gates after filtering by existing "Live" gate
-#' gate <- quadGateFromCtrls(gs, x = "CD4", y = "CD8", parentId = "Live", gateId = "T cells")
-#' 
+#' gate <- autoQuadGate(gs, x = "CD4", y = "CD8", parentId = "Live", gateId = "T cells")
+#'
 #' # Add gate to GatingSet
 #' gs_pop_add(gs, gate$gate, parent = "Singlets", names = gate$names)
 #' }
+#' @import flowCore
+#' @import flowWorkspace
 #' @export
-quadGateFromCtrls <- function(gs,
-                              x,
-                              y,
-                              probs = 0.99,
-                              ctrlId = "fmo",
-                              parentId="root",
-                              gateId="quadGate"){
+autoQuadGate <- function(gs,
+                        x,
+                        y,
+                        probs = 0.99,
+                        ctrlId = "fmo",
+                        parentId="root",
+                        gateId="quadGate"){
   # Validate inputs
   if (inherits(gs, c("flowframe","cytoframe"))) {
     stop("This function is for constructing gates for multiple samples")
@@ -173,7 +175,7 @@ quadGateFromCtrls <- function(gs,
   }else if (inherits(gs, c("GatingSet","GatingHierarchy"))){
     # Get data from GatingSet after filtering by parentId
     # Returns a cytoset
-    gs <- flowWorkspace::gs_pop_get_data(gs, parentId)
+    gs <- gs_pop_get_data(gs, parentId)
   }
   # Check for matching names
   if (!(x %in% colnames(gs)) | !(y %in% colnames(gs))){
@@ -183,7 +185,7 @@ quadGateFromCtrls <- function(gs,
   }else if (!(x %in% pData(gs)[[ctrlId]]) | !(y %in% pData(gs)[[ctrlId]])){
     stop(sprintf("Argument 'x': %s or 'y': %s not in phenoData column %s", x, y, ctrlId))
   }
-  
+
   # Get quantile for x
   gs_x <- gs[pData(gs)[[ctrlId]]==x]
   qt_x <- calculate_quantile(gs_x,
@@ -196,25 +198,26 @@ quadGateFromCtrls <- function(gs,
                              probs = probs)
   # Merge quantiles
   quantiles <- c(qt_x, qt_y)
+  print(quantiles)
   # Build gate
-  gate <- flowCore::quadGate(quantiles, filterId = gateId)
-  
+  gate <- quadGate(quantiles, filterId = gateId)
+
   # Make informative names - clockwise from upper left
   names <- c(paste0(x,"-", y, "+"),
              paste0(x,"+", y, "+"),
              paste0(x,"+", y, "-"),
              paste0(x,"-", y, "-"))
-  
-  return(list("gate" = gate, "names" = names))  
+
+  return(list("gate" = gate, "names" = names))
 }
 
 #' Constructs a 6 vertex diagonal polygon gate. Useful for gating singlets using
 #' FSC-A x FSC-H or gating CD3+TCRab+ T-cells.
-#' 
-#' The polygon has a maximum width defined by the width argument, a maximum height 
+#'
+#' The polygon has a maximum width defined by the width argument, a maximum height
 #' defined by the height argument, and a width between diagonal lines defined by diag_width.
 #' The bottom left corner is positioned at the origin argument.
-#' 
+#'
 #' @param x The name of the channel along the width (x-axis)
 #' @param y The name of the channel along the height (y-axis)
 #' @param width The total width of the polygon
@@ -222,17 +225,16 @@ quadGateFromCtrls <- function(gs,
 #' @param origin A numeric vector of length 2 defining the position of the bottom left corner of the gate (the default is c(0,0))
 #' @param diag_width The width between the two diagonal lines (the default is 0.5)
 #' @param gateId Character specifying the name for the gate that is returned
-#' 
 #' @returns Returns a [flowCore::polygonGate] object to use for filtering
-#' 
 #' @examples
 #' \dontrun{
 #' # Construct a singlets gate
 #' gates <- diagPolygonGate(gs, x = "FSC-A", y = "FSC-H", width = 3e6, height = 3.5e6, diag_width = 7e5, gateId = "Singlets")
-#' 
+#'
 #' # Add gate to GatingSet
 #' gs_pop_add(gs, gates, parent = "root")
 #' }
+#' @import flowCore
 #' @export
 diagPolygonGate <- function(x,
                             y,
@@ -247,7 +249,7 @@ diagPolygonGate <- function(x,
   }else if(!length(origin) == 2){
     stop("Origin must have length 2")
   }
-  
+
   # Calculate angle of diagonal
   theta <- atan(height/width)
   # Length of each base
@@ -263,6 +265,6 @@ diagPolygonGate <- function(x,
   vertices <- list(x_vert,y_vert)
   names(vertices) <- c(x, y)
   # Construct gate
-  gate <- flowCore::polygonGate(vertices, filterId = gateId)
+  gate <- polygonGate(vertices, filterId = gateId)
   return(gate)
 }

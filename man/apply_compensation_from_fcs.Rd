@@ -8,7 +8,7 @@ Compensation should be applied before transforming data and before renaming or f
 apply_compensation_from_fcs(fs)
 }
 \arguments{
-\item{fs}{A flowSet object}
+\item{fs}{A flowSet, flowFrame, cytoset, or cytoframe object}
 }
 \value{
 The flowSet with compensation applied.

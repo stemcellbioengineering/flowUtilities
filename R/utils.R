@@ -1,64 +1,76 @@
 
-#' Extract experiment metadata from .fcs filenames and add it to phenoData.
-#' 
-#' This function uses regular expressions to find patterns in the filenames.
-#' 
-#' @param fs A flowSet or GatingSet object
-#' @param ... Regular expression patterns to extract. Provide as id="regex pattern" where "id" will be added as a column in phenoData with the returned metadata as values in that column
-#' 
-#' @returns The flowSet or GatingSet with the metadata added. Can view added metadata by calling pData(fs).
-#' 
+#' Extract metadata from the "names" column in phenoData and add it as a new
+#' phenoData column.
+#'
+#' This function uses regular expressions to match patterns in the filenames,
+#' extracts those matches and adds them to a new column in phenoData.
+#'
+#' @param fs A flowSet or related object with a phenoData slot accessible using `pData(fs)`
+#' @param ... Regular expression patterns to extract. Provide as `id="regex pattern"` where "id" will be added as a column in phenoData with the returned metadata as values in that column
+#'
+#' @returns The object with the metadata added. Can view added metadata using `pData(fs)`.
+#'
 #' @examples
 #' \dontrun{
-#' # Add a group column identifying samples and controls 
-#' fs <- read_filenames_to_pdata(fs, group = "(?i)scc|fmo|unstained|sample")                              
+#' # Add a group column identifying samples and controls
+#' fs <- read_names_to_pdata(fs, group = "(?i)scc|fmo|unstained|sample")
 #' }
+#' @importFrom stringr str_extract
+#' @import flowCore
+#' @import flowWorkspace
 #' @export
-read_filenames_to_pdata <- function(fs, ...){
+read_names_to_pdata <- function(fs, ...){
+  # Validate input
+  if (!inherits(fs, c("flowSet","cytoset","GatingSet"))){
+    stop("Provide a flowSet, cytoset, or GatingSet object")
+  }
   search_terms <- list(...)
   # Validate input
   if (length(search_terms) < 1){
-    stop("Provide some search keywords")
+    stop("Provide some regular expression patterns to match")
   }
   if (any(names(search_terms) == "") | any(is.null(names(search_terms)))){
-    stop("Invalid search keywords")
+    stop("All regular expression patterns must be provided as named arguments")
   }
   # Get pData, will be used multiple times
   pd <- pData(fs)
   # Search for each key in pData
   for (key in names(search_terms)){
-   res <- lapply(pd, function(x) stringr::str_extract(x, pattern=search_terms[[key]]))
-   
-   if (any(is.na(res$name))) warning(sprintf("Could not find a match for %s=%s in all filename.",key, search_terms[[key]]))
-   # Add to pData
-   pData(fs)[[key]] <- res$name
+   res <- lapply(pd, function(x) str_extract(x, pattern=search_terms[[key]]))
+
+   if (any(is.na(res$name))) warning(sprintf("Could not find a match for %s=%s in all filenames.",key, search_terms[[key]]))
+   # Add new column
+   pd[[key]] <- res$name
   }
+  # Update in fs
+  pData(fs) <- pd
   return(fs)
 }
 
 #' Searches the phenoData for provided keywords and returns the matching samples.
-#' If a match is found, returns the associated flowFrame when a flowSet is provided, or a GatingHierarchy when a GatingSet is provided.
-#' If multiple matches are found, a flowSet/GatingSet is returned containing those matches. If no matches, the original data is returned.
-#' 
-#' Provide keywords as col="keyword", where col is the name of a column in phenoData. 
+#'
+#' Provide keywords as col="keyword", where col is the name of a column in phenoData.
 #' Multiple keywords can be provided. When match_all = TRUE, a sample must match all the keywords to be returned.
 #' When FALSE, samples that match any keyword are returned.
-#' 
-#' @param fs A flowSet or GatingSet
-#' @param ... Keywords to search for. Should be provided as named arguments where the name is the column to search in the phenoData and the value is the search keywords  
+#'
+#' @param fs A flowSet or related object with a phenoData slot accessible using `pData(fs)`
+#' @param ... Keywords to search for. Should be provided as named arguments where the name is the column to search in the phenoData and the value is the search keywords
 #' @param use_regex Whether to search using regular expressions (default: TRUE)
 #' @param ignore_case Whether the search is case sensitive. Only applies when use_regex = TRUE (default: TRUE)
 #' @param match_all Whether to return samples that match all or any keywords (default: TRUE, must match all)
 #' @param verbose Whether to print the samples that match
-#' 
-#' @returns A flowFrame, flowSet, GatingSet, or GatingHierarchy depending on what was provided
-#' 
+#'
+#' @returns If multiple matches are found, the returned object is the same class as
+#' provided. If a single match, the object contained in the provided object. For example,
+#' if a flowSet is provided, a flowFrame is returned.
+#'
 ##' @examples
 #' \dontrun{
 #' # Get all samples in group "FMO"
 #' fs_subset <- get_samples_by_keyword(fs, group = "FMO")
 #' }
-#' 
+#' @import flowCore
+#' @import flowWorkspace
 #' @export
 get_samples_by_keyword <- function(fs,
                                     ...,
@@ -66,17 +78,21 @@ get_samples_by_keyword <- function(fs,
                                     ignore_case=TRUE,
                                     match_all=TRUE,
                                     verbose=TRUE){
+  # Validate input
+  if (!inherits(fs, c("flowSet","cytoset","GatingSet"))){
+    stop("Provide a flowSet, cytoset, or GatingSet object")
+  }
   search_terms <- list(...)
   # Validate input
   if (length(search_terms) < 1){
     stop("Provide some search keywords")
   }
   if (any(names(search_terms) == "") | any(is.null(names(search_terms)))){
-    stop("Invalid search keywords")
+    stop("Search keywords must be provided as named arguments")
   }
   # Get pData to search
   pd <- pData(fs)
-  
+
   if (use_regex){
     sr <- lapply(names(search_terms), function(name){
       tryCatch(grepl(search_terms[[name]], pd[[name]], ignore.case=ignore_case), error = function(e) FALSE)
@@ -106,17 +122,19 @@ get_samples_by_keyword <- function(fs,
     if (verbose) message(cat(count_res," samples found:\n",paste0(pd[idx,"name"], collapse="\n"),sep=""), appendLF=TRUE)
   }else{
     ff <- fs
-    if (verbose) message(cat("No samples found",sep=""), appendLF=TRUE)
+    if (verbose) message(cat("No samples found. Original object returned",sep=""), appendLF=TRUE)
   }
-  return(ff)  
+  return(ff)
 }
 
 
 #' Returns the spill matrix contained in a flowFrame. If none is present, returns NULL.
-#' 
-#' @param ff A flowFrame object
-#' 
+#'
+#' @param ff A flowFrame or cytoframe object
 #' @returns The spill matrix for the flowFrame, if found, or else NULL
+#'
+#' @import flowCore
+#' @import flowWorkspace
 get_spill_matrix <- function(ff){
   # Get spill matrix if present - returns a named list
   # Equivalent to keyword(x, c("spillover", "SPILL", "$SPILLOVER")
@@ -134,49 +152,66 @@ get_spill_matrix <- function(ff){
 
 #' Apply compensation from spill matrices in provided in .fcs files.
 #' Compensation should be applied before transforming data and before renaming or filtering channels.
-#' 
-#' @param fs A flowSet object
-#' 
+#'
+#' @param fs A flowSet, flowFrame, cytoset, or cytoframe object
+#'
 #' @returns The flowSet with compensation applied.
-#' 
+#'
+#' @import flowCore
+#' @import flowWorkspace
 #' @export
 apply_compensation_from_fcs <- function(fs){
-  # Get named list of spillover from each flowframe
-  comp <- fsApply(fs, get_spill_matrix, simplify=FALSE)
-  # Apply to flowSet
-  fs_comp <- compensate(fs, comp)
+  # Validate input
+  if (!inherits(fs, c("flowSet", 'flowFrame', "cytoset", "cytoframe"))){
+    stop("Only flowSet, flowFrame, cytoset, and cytoframe objects are compatible with this function")
+  }
+
+  if (inherits(fs, c("flowSet", "cytoset"))){
+    # Get named list of spillover from each flowframe
+    comp <- fsApply(fs, get_spill_matrix, simplify=FALSE)
+  }else{
+    comp <- get_spill_matrix(fs)
+  }
+  # Apply compensation
+  fs <- compensate(fs, comp)
   return(fs)
 }
 
-#' Returns the marker names contained in flowSet.
+#' Returns the marker names stored in .fcs files.
 #' The marker names are typically user-defined when the .fcs files are created and can include descriptive names like "CD45 Y585-PE-A".
-#' You can call markernames(fs) to view the marker names contained in the flowSet.
+#'
+#' You can call markernames(fs) to view the marker names.
 #' Does not alter scatter (FCS-A, SSC-A, etc.) or time channels.
-#' 
+#'
 #' Optionally, regular expression(s) can be provided to extract substrings from marker names.
 #' When multiple patterns are provided, the substrings will be concatenated together in the order provided.
 #' This can be used to avoid duplicate channel names. For example, when both area and height are recorded for a given marker, it may be useful to distinguish them using the pattern "-A|-H".
 #' If the provided pattern does not match, the full marker name is returned unless partial matches are permitted.
-#' 
+#'
 #' If desired, a default name can be provided for marker names without a match. This can be used to label unused channels
-#' 
+#'
 #' @param fs A flowSet containing multiple .fcs files
 #' @param ... Any number of regular expression patterns (strings) to extract from marker names.
 #' @param sep The separator to use when concatenating strings (default: "")
 #' @param default_name Optional name for marker names where no patterns match (default: none)
 #' @param allow_partial_match Whether to use marker names when not all regular expression patterns match (default: TRUE)
 #' @param verbose Whether to print updated markers (default: TRUE)
-#' 
 #' @returns A list of marker names for their corresponding channels. This can be applied to fs
 #'  using [set_channels_from_markers()].
-#'  
 #' @examples
 #' \dontrun{
 #' # Get marker names
 #' markers <- get_marker_names(fs)
 #' }
+#' @importFrom stringr str_extract
+#' @import flowCore
+#' @import flowWorkspace
 #' @export
 get_marker_names <- function(fs, ..., sep = "", default_name = NULL, allow_partial_match = TRUE, verbose = TRUE){
+  # Validate input
+  if (!inherits(fs,c("flowSet","flowFrame","cytoset","cytoframe","GatingSet","GatingHierarchy"))){
+    stop("Only flowSet, flowFrame, cytoset, and cytoframe, GatingSet, or GatingHierarchy objects are compatible with this function")
+  }
   patterns <- list(...)
 
   # Get marker names from flowSet
@@ -184,7 +219,7 @@ get_marker_names <- function(fs, ..., sep = "", default_name = NULL, allow_parti
   # Use patterns to find substrings in markers
   if (length(patterns) > 0){
     for (name in names(markers)){
-      marker <- lapply(patterns, function(pattern) stringr::str_extract(markers[[name]], pattern=pattern))
+      marker <- lapply(patterns, function(pattern) str_extract(markers[[name]], pattern=pattern))
       # If all patterns match
       if (!any(is.na(marker))){
         # Update name
@@ -199,56 +234,80 @@ get_marker_names <- function(fs, ..., sep = "", default_name = NULL, allow_parti
         markers[[name]] <- default_name
       }
       # Else marker name used as is
-      
+
       if (verbose) message(sprintf("%s -> %s", name, markers[[name]]))
     }
   }else if (verbose){
-    message("No regular expression patterns provided. Returning marker names as provided.")
+    message("No regular expression patterns provided. Returning marker names as is")
   }
   return (markers)
 }
 
-#' Set channels (column names) from the marker names in a flowSet. The original channel names
-#' become the marker names. The marker names can be provided as a list, such as what is 
+#' Set channels (column names) from the marker names in a flowSet or GatingSet. The original channel names
+#' become the marker names. The marker names can be provided as a list, such as what is
 #' returned from [get_marker_names()]. If not provided, the marker names contained in the flowSet are used.
-#' 
-#' @param fs A flowSet object
+#'
+#' @param fs A flowSet or GatingSet object
 #' @param markers A list of marker names to set as channel names
-#' 
 #' @returns The flowSet with updated channel and marker names
+#' @import flowCore
+#' @import flowWorkspace
+#' @importFrom stats setNames
 #' @export
 set_channels_from_markers <- function(fs, markers = NULL){
+  # Validate input
+  if (!inherits(fs,c("flowSet","flowFrame","cytoset","cytoframe","GatingSet","GatingHierarchy"))){
+    stop("Only flowSet, flowFrame, cytoset, and cytoframe, GatingSet, or GatingHierarchy objects are compatible with this function")
+  }
   # Get marker names from flowSet if not provided
   if (is.null(markers)){
     markers <- markernames(fs)
   }
   # Update column names
-  colnames(fs) <- lapply(colnames(fs), function(name) tryCatch(markers[[name]], error=function(e) name))
-  # Use old column names as markernames
+  cols <- sapply(colnames(fs), function(name) tryCatch(markers[[name]], error=function(e) name))
+  # Check for duplicates (throws error)
+  dupl <- cols[duplicated(cols)]
+  # Number duplicates 1,2,...
+  if (length(dupl) > 0){
+    dupl <- sapply(seq_along(dupl), function(i) paste0(dupl[[i]],".",i))
+    cols[duplicated(cols)] <- dupl
+  }
+  # Add updated column names
+  colnames(fs) <- cols
+  # Make old column name the marker name
   markernames(fs) <- setNames(names(markers),markers)
-  
+
   return(fs)
 }
 
 #' Filter channels (column names) in flowSet using regular expressions.
-#' 
-#' @param fs The flowSet to filter.
+#'
+#' @param fs The flowSet, flowFrame, cytoset, or cytoframe object
 #' @param keep A regular expression used to select channels to keep in the flowSet.
 #' @param exclude A regular expression used to select channels to remove from the flowSet.
 #' @param verbose Whether to print the remaining channels (default: TRUE)
-#' @returns The filtered flowSet. 
-#' 
+#' @returns The filtered flowSet.
 #' @examples
 #' \dontrun{
 #' # Keep only scatter and time channels
 #' fs <- filter_channels(fs, keep="FSC|SSC|Time")
 #' }
-#' 
+#' @import flowCore
+#' @import flowWorkspace
 #' @export
 filter_channels <- function(fs, keep=NULL, exclude=NULL, verbose=TRUE){
+  # Validate input
+  if (!inherits(fs, c("flowSet", 'flowFrame', "cytoset", "cytoframe"))){
+    stop("Only flowSet, flowFrame, cytoset, and cytoframe objects are compatible with this function")
+  }
   # Get column names
   channels <- colnames(fs)
-  
+
+  # For debugging method imports - may remove in future
+  if (is.null(channels)){
+    stop("Failed to get channel names")
+  }
+
   # If neither keep or exclude provided, throw warning, no filtering
   if (all(is.null(c(keep,exclude)))){
     warning("Must provide a value to one of keep or exclude (nothing filtered).")
@@ -264,7 +323,7 @@ filter_channels <- function(fs, keep=NULL, exclude=NULL, verbose=TRUE){
   }
   # Remove from flowSet
   fs <- fs[,channels]
-  
+
   if (verbose){
     # Print channels retained after filtering
     #channels <- paste(channels, collapse="\n")
@@ -279,11 +338,14 @@ filter_channels <- function(fs, keep=NULL, exclude=NULL, verbose=TRUE){
 #'
 #' @param gs A GatingSet object
 #' @param limits A numeric vector of the quantiles (min, max) to use to estimate the limits. If not provided, the data range is used instead (default: data range)
-#'
 #' @return A named list where each name is a gate and each element is the corresponding limits for the channel(s) of that gate
-#'   
+#' @import flowWorkspace
 #' @export
 estimate_channel_limits <- function(gs, limits = NULL) {
+  # Validate inputs
+  if (!inherits(gs, "GatingSet")) {
+    stop("Input 'gs' must be a GatingSet object")
+  }
   # Validate inputs
   if (is.null(limits)){
     probs <- NULL
@@ -296,11 +358,7 @@ estimate_channel_limits <- function(gs, limits = NULL) {
   }else{
     stop("Argument 'limits' must be a numeric")
   }
-  # Validate inputs
-  if (!inherits(gs, "GatingSet")) {
-    stop("Input 'gs' must be a GatingSet object")
-  }
-  
+
   # Get all nodes (gates) in the hierarchy
   nodes <- gs_get_pop_paths(gs, path = 2)
   # Remove root from list
@@ -309,16 +367,16 @@ estimate_channel_limits <- function(gs, limits = NULL) {
   nodes <- strsplit(nodes,"/")
   # Add root as parent to any single node without a parent
   nodes <- lapply(nodes, function(node){if(length(node)==1) c("root",node[[1]]) else node})
-  
+
   # Initialize empty list to store limits for each gate
   node_limits <- vector("list",length(nodes))
   names(node_limits) <- vapply(nodes, `[`, 2, FUN.VALUE=character(1))
-  
+
   for (node in nodes){
-    
+
     # Get gate information
     gate <- gs_pop_get_gate(gs, node[[2]])
-    
+
     # If returned gate is a list of gates, one for each sample, use the first
     if (inherits(gate,"list")){
       gate <- gate[[1]]
@@ -346,4 +404,25 @@ estimate_channel_limits <- function(gs, limits = NULL) {
     node_limits[[node[2]]] <- lim
   }
   return (node_limits)
+}
+
+#' Randomly sample from frames in a set, returning n events per frame.
+#' If the number of events in the frame < n, all events are retained.
+#'
+#' @param fs Flowset or cytoset object
+#' @param n Number of events to sample (default: 25000)
+#' @return The downsampled set
+#' @import flowCore
+#' @import flowWorkspace
+#' @export
+downsampleFrames <- function(fs, n = 25000){
+  # Validate input
+  if (!inherits(fs, c("flowSet", "cytoset"))){
+    stop("Only flowSet and cytoset objects are compatible with this function")
+  }
+  fs <- fsApply(fs, function(ff){
+    idx <- sample.int(nrow(ff), min(n, nrow(ff)))
+    ff[idx,]
+  })
+  return(fs)
 }

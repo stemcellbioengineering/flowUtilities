@@ -11,11 +11,11 @@ calculate_quantile(gs, channels = NULL, probs = 0.99, parentId = "root", ...)
 
 \item{channels}{Character vector specifying the channels (column names) in gs to calculate the quantile for (default: all channels)}
 
+\item{probs}{A numeric probability value between 0 and 1 or a vector of probabilities (by default, 0.99)}
+
 \item{parentId}{Optional name of gate to use to filter data before calculating quantile. Only used when a GatingSet or GatingHierarchy is provided}
 
 \item{...}{Additional arguments passed to \link[stats:quantile]{stats::quantile}}
-
-\item{prob}{A numeric probability value between 0 and 1 or a vector of probabilities (by default, 0.99)}
 }
 \value{
 A named list of quantile values

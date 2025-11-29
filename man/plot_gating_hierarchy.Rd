@@ -6,21 +6,22 @@
 \usage{
 plot_gating_hierarchy(
   gs,
-  output_dir,
+  output_dir = NULL,
   output_type = "pdf",
   ncol = NULL,
   nrow = NULL,
   limits = "data",
   width = 27.94,
   height = 21.59,
-  font_size = 8,
   n_bins = 128,
   density_fill = "gray",
   density_alpha = 0.5,
   stat_loc = "gate",
   stat_digits = 1,
   stat_pos = 0.5,
-  remove_axis_ticks = FALSE
+  remove_axis_ticks = FALSE,
+  return_plots = FALSE,
+  ...
 )
 }
 \arguments{
@@ -34,11 +35,11 @@ plot_gating_hierarchy(
 
 \item{nrow}{Integer specifying the number of rows in the plot grid (default: NULL)}
 
+\item{limits}{Plot limits "auto", "data", "instrument" (default: "auto")}
+
 \item{width}{Numeric value for plot width in cm (default: 27.94, letter size)}
 
 \item{height}{Numeric value for plot height in cm (default: 21.59, letter size)}
-
-\item{font_size}{Font size in points (default: 8)}
 
 \item{n_bins}{Number of hex bins for 2D scatter plots (default: 128)}
 
@@ -53,9 +54,13 @@ plot_gating_hierarchy(
 \item{stat_pos}{Fine-tunes gate statistics position on plot (default: 0.5)}
 
 \item{remove_axis_ticks}{TRUE or FALSE to remove axis ticks and tick labels (numbering) for cleaner plots (default: FALSE)}
+
+\item{return_plots}{Whether to return the plots to the user. Will only return a maximum of 5 plots. Plots can be returned and saved to disk}
+
+\item{...}{Additional arguments passed to \code{\link[=plot_theme]{plot_theme()}}}
 }
 \value{
-Nothing is returned. Files are saved in specified directory
+Nothing is returned when return_plots==FALSE. Files are saved in specified directory
 }
 \description{
 This function generates plots of the entire gating hierarchy for each sample
@@ -72,5 +77,4 @@ gs <- load_gs("path/to/gatingset")
 # Plot with 3 rows
 plot_gating_hierarchy(gs, output_dir = "./plots", nrow = 1)
 }
-
 }

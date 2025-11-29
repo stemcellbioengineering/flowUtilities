@@ -2,9 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{get_samples_by_keyword}
 \alias{get_samples_by_keyword}
-\title{Searches the phenoData for provided keywords and returns the matching samples.
-If a match is found, returns the associated flowFrame when a flowSet is provided, or a GatingHierarchy when a GatingSet is provided.
-If multiple matches are found, a flowSet/GatingSet is returned containing those matches. If no matches, the original data is returned.}
+\title{Searches the phenoData for provided keywords and returns the matching samples.}
 \usage{
 get_samples_by_keyword(
   fs,
@@ -16,7 +14,7 @@ get_samples_by_keyword(
 )
 }
 \arguments{
-\item{fs}{A flowSet or GatingSet}
+\item{fs}{A flowSet or related object with a phenoData slot accessible using \code{pData(fs)}}
 
 \item{...}{Keywords to search for. Should be provided as named arguments where the name is the column to search in the phenoData and the value is the search keywords}
 
@@ -29,7 +27,9 @@ get_samples_by_keyword(
 \item{verbose}{Whether to print the samples that match}
 }
 \value{
-A flowFrame, flowSet, GatingSet, or GatingHierarchy depending on what was provided
+If multiple matches are found, the returned object is the same class as
+provided. If a single match, the object contained in the provided object. For example,
+if a flowSet is provided, a flowFrame is returned.
 }
 \description{
 Provide keywords as col="keyword", where col is the name of a column in phenoData.
@@ -41,5 +41,4 @@ When FALSE, samples that match any keyword are returned.
 # Get all samples in group "FMO"
 fs_subset <- get_samples_by_keyword(fs, group = "FMO")
 }
-
 }

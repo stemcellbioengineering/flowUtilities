@@ -7,7 +7,7 @@
 get_spill_matrix(ff)
 }
 \arguments{
-\item{ff}{A flowFrame object}
+\item{ff}{A flowFrame or cytoframe object}
 }
 \value{
 The spill matrix for the flowFrame, if found, or else NULL
