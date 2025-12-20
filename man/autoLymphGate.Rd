@@ -47,7 +47,11 @@ filtering by an existing gate.
 \examples{
 \dontrun{
 # Construct gates after filtering by existing "Singlets" gate
-gates <- autoLymphGate(gs, x = "FSC-A", y = "SSC-A", parentId = "Singlets", gateId = "Lymphocytes")
+gates <- autoLymphGate(gs,
+                       x = "FSC-A",
+                       y = "SSC-A",
+                       parentId = "Singlets",
+                       gateId = "Lymphocytes")
 
 # Add gate to GatingSet
 gs_pop_add(gs, gates, parent = "Singlets")

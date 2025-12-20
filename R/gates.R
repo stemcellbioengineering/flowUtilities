@@ -21,7 +21,11 @@
 #' @examples
 #' \dontrun{
 #' # Construct gates after filtering by existing "NonDebris" gate
-#' gates <- autoSingletGate(gs, area = "FSC-A", height = "FSC-H", parentId = "NonDebris", gateId = "Singlets")
+#' gates <- autoSingletGate(gs,
+#'                          area = "FSC-A",
+#'                          height = "FSC-H",
+#'                          parentId = "NonDebris",
+#'                          gateId = "Singlets")
 #'
 #' # Add gate to GatingSet
 #' gs_pop_add(gs, gates, parent = "NonDebris")
@@ -91,7 +95,11 @@ autoSingletGate <- function(gs,
 #' @examples
 #' \dontrun{
 #' # Construct gates after filtering by existing "Singlets" gate
-#' gates <- autoLymphGate(gs, x = "FSC-A", y = "SSC-A", parentId = "Singlets", gateId = "Lymphocytes")
+#' gates <- autoLymphGate(gs,
+#'                        x = "FSC-A",
+#'                        y = "SSC-A",
+#'                        parentId = "Singlets",
+#'                        gateId = "Lymphocytes")
 #'
 #' # Add gate to GatingSet
 #' gs_pop_add(gs, gates, parent = "Singlets")
@@ -148,14 +156,19 @@ autoLymphGate <- function(gs,
 #' @param ctrlId Character name of column in phenoData matching control samples to channel names (default: "fmo")
 #' @param parentId Character specify the parent node name used to filter the data (by default, the 'root' node, no filtering is performed)
 #' @param gateId Character specifying the name for the gate that is returned
-#' @returns A list containing a [flowCore::quadGate] object accessible via $gate and a character vector of quadrant names accessible via $names.
+#' @returns A [flowCore::quadGate] object
 #' @examples
 #' \dontrun{
 #' # Construct gates after filtering by existing "Live" gate
-#' gate <- autoQuadGate(gs, x = "CD4", y = "CD8", parentId = "Live", gateId = "T cells")
+#' gate <- autoQuadGate(gs, x = "CD4", y = "CD8", parentId = "Live")
+#'
+#' # A quadGate becomes four rectangleGate when added to a GatingSet
+#' # The names will be created automatically or, we can specify the names
+#' # when adding to GatingSet (order is clockwise from upper left)
+#' names <- c("CD4-CD8+","CD4+CD8+","CD4+CD8-","CD4-CD8-")
 #'
 #' # Add gate to GatingSet
-#' gs_pop_add(gs, gate$gate, parent = "Singlets", names = gate$names)
+#' gs_pop_add(gs, gate, parent = "Live", names = names)
 #' }
 #' @import flowCore
 #' @import flowWorkspace
@@ -202,13 +215,7 @@ autoQuadGate <- function(gs,
   # Build gate
   gate <- quadGate(quantiles, filterId = gateId)
 
-  # Make informative names - clockwise from upper left
-  names <- c(paste0(x,"-", y, "+"),
-             paste0(x,"+", y, "+"),
-             paste0(x,"+", y, "-"),
-             paste0(x,"-", y, "-"))
-
-  return(list("gate" = gate, "names" = names))
+  return (gate)
 }
 
 #' Constructs a 6 vertex diagonal polygon gate. Useful for gating singlets using
@@ -229,7 +236,13 @@ autoQuadGate <- function(gs,
 #' @examples
 #' \dontrun{
 #' # Construct a singlets gate
-#' gates <- diagPolygonGate(gs, x = "FSC-A", y = "FSC-H", width = 3e6, height = 3.5e6, diag_width = 7e5, gateId = "Singlets")
+#' gates <- diagPolygonGate(gs,
+#'                          x = "FSC-A",
+#'                          y = "FSC-H",
+#'                          width = 3e6,
+#'                          height = 3.5e6,
+#'                          diag_width = 7e5,
+#'                          gateId = "Singlets")
 #'
 #' # Add gate to GatingSet
 #' gs_pop_add(gs, gates, parent = "root")

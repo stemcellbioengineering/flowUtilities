@@ -41,7 +41,13 @@ The bottom left corner is positioned at the origin argument.
 \examples{
 \dontrun{
 # Construct a singlets gate
-gates <- diagPolygonGate(gs, x = "FSC-A", y = "FSC-H", width = 3e6, height = 3.5e6, diag_width = 7e5, gateId = "Singlets")
+gates <- diagPolygonGate(gs,
+                         x = "FSC-A",
+                         y = "FSC-H",
+                         width = 3e6,
+                         height = 3.5e6,
+                         diag_width = 7e5,
+                         gateId = "Singlets")
 
 # Add gate to GatingSet
 gs_pop_add(gs, gates, parent = "root")

@@ -9,7 +9,7 @@ calculate_range(gs, channels = NULL, parentId = "root")
 \arguments{
 \item{gs}{GatingSet, GatingHierarchy, flowSet, flowFrame, cytoset or cytoframe object}
 
-\item{channels}{Character vector specifying the channels (column names) in gs to calculate the range for (default: all channels)}
+\item{channels}{Character vector or list specifying the channels (column names) in gs to calculate the range for (default: all channels)}
 
 \item{parentId}{Optional name of gate to use to filter data before calculating quantile. Only used when a GatingSet or GatingHierarchy is provided}
 }
@@ -23,10 +23,11 @@ concatenated and the quantile calculated using all of the data.
 }
 \examples{
 \dontrun{
-# Calculate range values for the CD4 channels using a flowSet, flowFrame, cytoset, or cytoframe
+# Calculate range values for the CD4 channels using a flowSet
 r <- calculate_range(fs, "CD4")
 
-# Calculate range values for the CD4 channels using a GatingSet or GatingHierarchy by filtering for "Live" cells first
+# Calculate range values for the CD4 channels using a GatingSet
+# by filtering for "Live" cells first
 r <- calculate_range(gs, "CD4", parentId = "Live")
 }
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{get_spill_matrix}
 \alias{get_spill_matrix}
-\title{Returns the spill matrix contained in a flowFrame. If none is present, returns NULL.}
+\title{Returns the spill matrix contained in a flowFrame.}
 \usage{
 get_spill_matrix(ff)
 }
@@ -13,5 +13,5 @@ get_spill_matrix(ff)
 The spill matrix for the flowFrame, if found, or else NULL
 }
 \description{
-Returns the spill matrix contained in a flowFrame. If none is present, returns NULL.
+If none is present, returns NULL.
 }

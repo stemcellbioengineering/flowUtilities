@@ -27,10 +27,11 @@ concatenated and the quantile calculated using all of the data.
 }
 \examples{
 \dontrun{
-# Calculate quantile values for the CD4 channels using a flowSet, flowFrame, cytoset, or cytoframe
+# Calculate quantile values for the CD4 channels using a flowSet
 q <- calculate_quantile(fs, "CD4", prob = 0.99)
 
-# Calculate quantile values for the CD4 channels using a GatingSet or GatingHierarchy by filtering for "Live" cells first
+# Calculate quantile values for the CD4 channels using a GatingSet
+# by filtering for "Live" cells first
 q <- calculate_quantile(gs, "CD4", prob = 0.99, parentId = "Live")
 }
 }

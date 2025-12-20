@@ -2,7 +2,9 @@
 title: "Introduction to flowUtilities"
 author: "John Edgar"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette: default
+  rmarkdown::pdf_document: default
 vignette: >
   %\VignetteIndexEntry{Introduction to flowUtilities}
   %\VignetteEngine{knitr::rmarkdown}
@@ -18,11 +20,15 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-This vignette demonstrates how to use `flowUtilities` to simplify flow cytometry data analysis workflows. The package makes use of the Bioconductor libraries [flowCore](https://www.bioconductor.org/packages/release/bioc/html/flowCore.html), [flowWorkspace](https://www.bioconductor.org/packages/flowWorkspace), and [flowStats](https://bioconductor.org/packages/release/bioc/html/flowStats.html) to streamline data import, gating, visualization, and statistical analysis.
+This vignette demonstrates how to use `flowUtilities` to simplify flow cytometry data analysis workflows. The package makes use of the Bioconductor libraries [flowCore](https://www.bioconductor.org/packages/release/bioc/html/flowCore.html), [flowWorkspace](https://www.bioconductor.org/packages/flowWorkspace), [flowStats](https://bioconductor.org/packages/release/bioc/html/flowStats.html), and [ggcyto](https://www.bioconductor.org/packages/release/bioc/html/ggcyto.html) to streamline data import, gating, visualization, and statistical analysis.
+
+`flowUtilities` is designed to be compatible with both `flowSet` objects from the `flowCore` library, and `cytoset` objects from the `flowWorkspace` library. We use `cytoset` here, but you could substitute the other if preferred.
+
+This vignette provides an overview of `flowUtilities` but is not exhaustive. Refer to the package documentation for a complete list. For a particular function, use `?function_name` for details on how to use.
 
 ## Load data and apply compensation
 
-The example data is from human postnatal thymus that were stained with CD3, CD4, CD8a, CD27, CCR7, and TCRαβ antibodies. It includes two samples and six fluorescent-minus-one controls. We can read the .fcs files into a `flowWorkspace::cytoset` object.
+The example data is from human postnatal thymus that were stained with CD3, CD4, CD8a, CD27, CCR7, and TCRab antibodies. It includes two samples and six fluorescent-minus-one controls. We can read the .fcs files into a `flowWorkspace::cytoset` object.
 
 ```{r, message=FALSE, warning=FALSE}
 library(flowWorkspace)
@@ -34,15 +40,21 @@ files <- list.files(dir, pattern = ".fcs",full.names = TRUE)
 
 # Load cytoset
 cs <- load_cytoset_from_fcs (files)
-cs
 ```
+
+As a first step, it is recommended to perform a quality control check before gating to filter out artifacts due to flow rate instabilities or signal acquisition anomalies. A number of Bioconductor libraries are available to do this, including [flowAI](https://bioconductor.org/packages/release/bioc/html/flowAI.html). We won't actually run the QC here (it was already applied to the example data), but the following code shows how to use `flowAI` to clean up our data. 
+
+```{r eval=FALSE}
+cs <- flowAI::flow_auto_qc(cs)
+```
+
 The compensation was calculated with the cytometer software and the spill matrices stored in the .fcs files. We can use `apply_compensation_from_fcs` to find them and apply compensation to the data.
 
 ```{r}
 cs <- apply_compensation_from_fcs(cs)
 ```
 
-The channel names used by the cytometer have the format "FLn-A", "FLn-H" recording the area and height, respectively. We don't need the height channels and can remove them using `filter_channels`. Again, we'll use a regular expression to exclude all channels using the pattern "FL" followed by one or more digits "`\\d+`" then "-H".
+The channel names used by the cytometer have the format "FLn-A", "FLn-H" recording the area and height, respectively. We don't need the height channels and can remove them using `filter_channels`. We'll use a regular expression to find the channels to exclude.
 
 ```{r}
 cs <- filter_channels(cs, exclude="FL\\d+-H")
@@ -50,11 +62,11 @@ cs <- filter_channels(cs, exclude="FL\\d+-H")
 
 ## Adding metadata from filenames
 
-This data was collected using a CytoFlex LX cytometer. The resultant .fcs file names have the format "01-MySample-A1.fcs", where "01" is the plate ID, "MySample" is the sample ID, and "A1" is the well (or tube) ID. In this example, the sample ID includes details to identify the type (sample or FMO control) that will be useful later.
+This data was collected using a CytoFlex LX cytometer. The resultant .fcs file names have the format "01-MySample-A1.fcs", where "01" is the plate ID, "MySample" is the user-defined sample ID, and "A1" is the well (or tube) ID. In this example, the sample ID includes details to identify the type (sample or FMO control) that will be useful later.
 
-We can extract all of this metadata from the file names using [regular expressions](https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html) and add it to the phenoData contained in the `GatingSet` object. This will allow us to select samples or groups of samples for plotting or further analysis. 
+We can extract all of this metadata from the file names using [regular expressions](https://cran.r-project.org/web/packages/stringr/vignettes/regular-expressions.html) and add it to the phenoData contained in the `cytoset`. This will allow us to select samples or groups of samples for plotting or further analysis. 
 
-Provide any number of named arguments to `read_filenames_to_pdata` with regular expression patterns to search for. The names will be added as columns to phenoData with the search results as column entries. Here we are adding the sample, group, and fmo metadata.
+Provide any number of named arguments to `read_filenames_to_pdata` with regular expression patterns to search for. The names will be added as columns to phenoData with the search results as column entries. Here we are adding "sample", "group", and "fmo" metadata columns. Regular expressions may look a bit unwieldy, but they are incredibly useful. A Google search for "R regex cheat sheet" is helpful for writing them.
 
 ```{r warning=FALSE}
 cs <- read_names_to_pdata(cs,
@@ -63,15 +75,16 @@ cs <- read_names_to_pdata(cs,
                           fmo = "CD\\d+[A-z]*|TCR[A-z]{2}|CCR7|ZOMBIE-UV")
 ```
 
+We can view the entries using the method `pData(cs)` (with `knitr::kable` to display it as a table).
+
 ```{r, echo=FALSE, results='asis'}
 knitr::kable(pData(cs))
 ```
 
-Regular expressions look a bit unwieldy. A Google search for "R regex cheat sheet" is helpful for writing them.
 
 ## Adding informative marker names
 
-The .fcs files  contain user-defined marker names (like "CD3", "CD4", etc.) that we would like to use instead of "FLn-A". These marker names also include other details like the laser and filter set that we don't need. Calling `get_marker_names` with the appropriate regular expression will extract the useful marker names while ignoring the rest. Channels that were recorded but did not include an antibody will be labeled with the default "UNUSED".
+The .fcs files contain user-defined marker names (like "CD3", "CD4", etc.) that we would like to use instead of the uninformative "FLn-A". These marker names also include other details like the laser and filter set that we don't need. Calling `get_marker_names` with the appropriate regular expression will extract the useful marker names while ignoring the rest. Channels that were recorded but did not include an antibody will be labeled with the default "UNUSED". Here, our regular expression will search for "CD#" markers OR "TCRab/gd" OR "CCR7" OR "ZOMBIE-UV".
 
 ```{r}
 markers <- get_marker_names(cs,
@@ -84,6 +97,45 @@ If we're happy with the marker names, we can make them the new channel names.
 ```{r, message=FALSE, warning=FALSE}
 cs <- set_channels_from_markers(cs, markers = markers)
 ```
+
+## Data filtering
+
+Often there are events at or near the detection limit of the cytometer that are uninformative and make plotting a pain. We can apply a `flowCore::rectangleGate` to the FSC-A and SSC-A channels to clean up the data. The `plot_grid` function can be used to visualize the gate. Here, we've defined the gate to capture events where we are certain our cells will be. We will use `get_samples_by_keyword` to select our FMO samples for plotting using the group ID that we added to the phenoData earlier.
+
+```{r, message=FALSE, fig.width=5, fig.height=4}
+x_axis <- "FSC-A"
+y_axis <- "SSC-A"
+
+# Define gate edges
+edges <- list(c(0, 1.0e6),   # FSC-A
+              c(0, 0.3e6))   # SSC-A
+# Add names so the rectangle gate knows which channels it is for
+names(edges) <- c(x_axis, y_axis)
+
+# Create rectangle gate
+gate <- flowCore::rectangleGate(edges)
+
+# Retrieve fmos for visualization
+cs_fmo <- get_samples_by_keyword(cs, group="FMO")
+
+# Visualize gate
+plot_grid(cs_fmo,
+          x_axis,
+          y_axis,
+          gate,
+          limits = edges,
+          facet_by = "sample",
+          ncol = 3,
+          n_bins = 2048)
+```
+
+Note, this filtering is a data preprocessing step and, thus, not something we want to include in our gating hierarchy. Therefore, we will use the gate to subset the data and remove the events completely.
+
+```{r, message=FALSE}
+cs <- Subset(cs, gate)
+
+```
+
 
 ## Transforming fluorescent channels
 
@@ -102,7 +154,7 @@ transList <- estimateLogicleTransform(gs, channels = markers, m=5)
 gs <- transform(gs, transList)
 ```
 
-We can visualize the transformation using `plot_stacked_hist`. We don't need to plot all of the data, so we'll use `get_samples_by_keyword` to select only the FMO controls using the phenoData group ID that we added previously.
+We can visualize the transformation using the `plot_stacked_hist` function. We don't need to plot all of the data, so we'll use `get_samples_by_keyword` to select only the FMO controls using the phenoData group ID that we added previously.
 
 ```{r, results='hide', message=FALSE, fig.width=6, fig.height=3}
 # Retrieve fmos for visualization
@@ -115,50 +167,12 @@ plot_stacked_hist(gs_fmo, markers, nrow = 1)
 
 Gating data involves constructing gate objects and sequentially applying them to the `GatingSet` (see the [flowWorkspace vignette](https://www.bioconductor.org/packages/devel/bioc/vignettes/flowWorkspace/inst/doc/flowWorkspace-Introduction.html) for an introduction).
 
-### Boundary filter
-
-Often there are events at or near the detection limit of the cytometer that are uninformative and make setting plot limits a pain. We can apply a `flowCore::rectangleGate` to the FSC-A and SSC-A channels to clean up the data. The `plot_grid` function can be used to visualize the gate.
-
-```{r, message=FALSE, fig.width=5, fig.height=4}
-parentID <- "root"
-gateID <- "BoundaryFilter"
-
-x_axis <- "FSC-A"
-y_axis <- "SSC-A"
-
-# Define gate edges
-edges <- list(c(0, 1.0e6),   # FSC-A
-              c(0, 0.3e6))   # SSC-A
-names(edges) <- c(x_axis, y_axis)
-
-# Create rectangle gate
-gate <- flowCore::rectangleGate(edges, filterId = gateID)
-
-# Visualize gate
-plot_grid(gs_fmo,
-          x_axis,
-          y_axis,
-          gate,
-          limits = edges,
-          subset = parentID,
-          facet_by = "sample",
-          ncol = 3,
-          n_bins = 2048)
-```
-
-This does not apply the gate to our `GatingSet`. The edge locations can be adjusted and the above code re-run. Once satisfied with the gate, add it to the `GatingSet`.
-
-```{r, message=FALSE}
-gs_pop_add(gs, gate, parent=parentID)
-recompute(gs)
-```
-
 ### Singlet discrimination
 
-Single cells can be gated by applying a `flowCore::polygonGate` to events along the diagonal of the FCS-A by FSC-H channels. This process can be automated by applying a robust linear model to detect single cells in each sample in the `GatingSet`. The `singletsGates` function does this and returns a list of gates (one for each sample). We can visualize the gate before applying it.
+Single cells can be gated by applying a `flowCore::polygonGate` to events along the diagonal of the FCS-A by FSC-H channels. This process can be automated by applying a robust linear model to detect single cells in each sample in the `GatingSet`. The `autoSingletGate` function does this and returns a list of gates (one for each sample). We can use `plot_grid` visualize the gate before applying it.
 
 ```{r, fig.width=5, fig.height=4}
-parentID <- "BoundaryFilter"
+parentID <- "root"
 gateID <- "Singlets"
 
 x_axis <- "FSC-A"
@@ -176,22 +190,22 @@ plot_grid(gs_fmo,
           x_axis,
           y_axis,
           gate,
-          limits = "data",
           subset = parentID,
           facet_by = "sample",
           ncol = 3)
 ```
 
-Apply the gate.
+This calculates the gate but does not apply it to our `GatingSet`. After plotting, you can adjust the gate parameters and re-run the above code block. Once satisfied, add the gate to the `GatingSet`.
 
 ```{r, message=FALSE}
+# Apply gate
 gs_pop_add(gs, gate, parent=parentID)
 recompute(gs)
 ```
 
 ### Identify lymphocytes 
 
-Lymphocytes can be identified based on their FSC-A and SSC-A characteristics. The function `lymphocyteGate` can automate this process. Because many of these cells are CD3+, we can use the CD3 channel to improve lymphocyte detection.
+Lymphocytes can be identified based on their FSC-A and SSC-A characteristics. The function `autoLymphGate` can automate this process. Because many of these cells are CD3+, we can use the CD3 channel to improve lymphocyte detection. If you want to gate your cells manually, a `flowCore::polygonGate` could be used instead. We want to apply the gate to single cells, so we'll specify "Singlets" as the parent population.
 
 ```{r lymphocyte_gate, fig.width=5, fig.height=4}
 parentID <- "Singlets"
@@ -213,20 +227,22 @@ plot_grid(gs_fmo,
           x_axis,
           y_axis,
           gate,
-          limits="data",
           subset=parentID,
           facet_by="sample",
           ncol=3)
 ```
 
+Looks good, lets apply it to the `GatingSet`.
+
 ```{r, message=FALSE}
+# Apply gate
 gs_pop_add(gs, gate, parent=parentID)
 recompute(gs)
 ```
 
 ### Viable cell selection
 
-Use a `flowCore::rectangleGate` to exclude dead cells using the Zombie-UV viability dye.
+Let's use a `flowCore::rectangleGate` to exclude dead cells using the Zombie-UV viability dye.
 
 ```{r, message=FALSE, fig.width=5, fig.height=4}
 parentID <- "Lymphocytes"
@@ -247,7 +263,6 @@ plot_grid(gs_fmo,
           x_axis,
           y_axis,
           gate,
-          limits="data",
           subset=parentID,
           facet_by="sample",
           ncol=3)
@@ -261,7 +276,7 @@ recompute(gs)
 
 ### Identifying T Cells
 
-We can gate T cells based on expression of CD3 and TCRαβ. `diagPolygonGate` is a convenience function for constructing a gate along a diagonal population (it can also be used for singlet discrimination).
+We can gate T cells based on expression of CD3 and TCRab. `diagPolygonGate` is a convenience function for constructing a gate along a diagonal population (it can also be used for singlet discrimination).
 
 ```{r, fig.width=5, fig.height=4}
 parentID <- "Live"
@@ -298,7 +313,7 @@ recompute(gs)
 
 ### Gate CD4 and CD8 T cell subsets
 
-We can identify CD4+CD8+ (DP), CD4+CD8- (4SP), and CD4-CD8+ (8SP) T cell populations. The "fmo" column in phenoData contains marker names that match the FMO controls to their respective channel. The `autoQuadGate` function can use this information to set threshold of a quadrant gate. It calculates the quantile using each channel's FMO based on the `probs` argument. The function returns a list containing a `flowCore::quadGate` object and a vector of names to apply to each quadrant population.
+We can identify CD4+CD8+ (DP), CD4+CD8- (4SP), and CD4-CD8+ (8SP) T cell populations. The "fmo" column in phenoData contains marker names that match the FMO controls to their respective channel. The `autoQuadGate` function can use this information to set threshold of a quadrant gate. It calculates the quantile using each channel's FMO based on the `probs` argument and returns  a `flowCore::quadGate` object. Here, `probs=0.99` means we want to set the gate so that 99% of our FMO events are negative.
 
 ```{r, fig.width=5, fig.height=4}
 parentID <- "CD3+TCRab+"
@@ -320,37 +335,77 @@ gate <- autoQuadGate(gs,
 plot_grid(gs_fmo,
           x_axis,
           y_axis,
-          gate$gate,
-          limits="data",
+          gate,
           subset=parentID,
           facet_by="sample",
           ncol=3)
 ```
 
+Examining the "FMO_CD4" sample, we can see that the CD4+ quadrants add up to 1%. Similarly for the "FMO_CD8a" sample the CD8a+ quadrants.
+
+Note, a quadGate becomes four `flowCore::rectangleGate`s when added to the `GatingSet`. The names of each gate can be generated automatically from the marker names, or we can specify them when we add the gate.
+
 ```{r, message=FALSE}
+# Make informative names - clockwise from upper left
+names <- c(paste0(x_axis,"-", y_axis, "+"),
+           paste0(x_axis,"+", y_axis, "+"),
+           paste0(x_axis,"+", y_axis, "-"),
+           paste0(x_axis,"-", y_axis, "-"))
+
 # Apply gate
-gs_pop_add(gs, gate$gate, parent=parentID, names=gate$names)
+gs_pop_add(gs, gate, parent=parentID, names=names)
 recompute(gs)
+```
+
+## Backgating
+
+Backgating is often useful to validate a gating strategy. The `plot_backgating` function applies the specified gate to all ancestral populations and overlays the events within that gate over all events. Here, we will plot the CD4-CD8a+ gate to view its distribution.
+
+```{r, message=FALSE, fig.width=7, fig.height=4}
+# Select samples to plot
+gs_samp <- get_samples_by_keyword(gs, group="SAMPLE")
+# Plot gating hierarchy
+plot_backgating(gs_samp,
+                gate = "CD4-CD8a+",
+                output_dir = NULL,
+                ncol = 5, 
+                width = 7, 
+                height = 2,
+                remove_axis_ticks = TRUE,
+                top_margin = 0.25)
 ```
 
 ## Plot the gating hierarchy for samples
 
-After gating, we can visualize the gating hierarchy using `plot_gating_hierarchy`. This function is intended to save the plots in a directory rather than print to screen. However, we can return the plots to display for a small number of samples.
+After gating, we can visualize the gating hierarchy using `plot_gating_hierarchy`.
 
-```{r, message=FALSE, fig.width=5, fig.height=12}
+```{r, message=FALSE, fig.width=6, fig.height=8}
 # Select samples to plot
 gs_samp <- get_samples_by_keyword(gs, group="SAMPLE")
 # Plot gating hierarchy
 plot_gating_hierarchy(gs_samp,
                       output_dir = NULL,
-                      ncol = 3, 
-                      width = 5, 
-                      height = 8,
-                      limits = "data",
+                      ncol = 4, 
+                      width = 6, 
+                      height = 4,
                       remove_axis_ticks = TRUE,
-                      top_margin = 0.25,
-                      return_plots = TRUE)
+                      top_margin = 0.25)
 ```
+
+## Further analysis
+
+Once we've finished gating, we can calculate statistics from our `GatingSet` for further analysis or export as a .csv file.   
+
+```{r warning=FALSE, echo=FALSE, results='asis'}
+counts <- flowWorkspace::gs_pop_get_stats(gs_samp,
+                                          c("CD4+CD8a+","CD4+CD8a-","CD4-CD8a+"),
+                                          type = "count")
+
+# write.csv(counts, "filename.csv")
+
+knitr::kable(counts)
+```
+
 
 ## Session Information
 

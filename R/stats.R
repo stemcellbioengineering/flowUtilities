@@ -14,10 +14,11 @@
 #' @returns A named list of quantile values
 #' @examples
 #' \dontrun{
-#' # Calculate quantile values for the CD4 channels using a flowSet, flowFrame, cytoset, or cytoframe
+#' # Calculate quantile values for the CD4 channels using a flowSet
 #' q <- calculate_quantile(fs, "CD4", prob = 0.99)
 #'
-#' # Calculate quantile values for the CD4 channels using a GatingSet or GatingHierarchy by filtering for "Live" cells first
+#' # Calculate quantile values for the CD4 channels using a GatingSet
+#' # by filtering for "Live" cells first
 #' q <- calculate_quantile(gs, "CD4", prob = 0.99, parentId = "Live")
 #' }
 #' @importFrom stats quantile
@@ -72,15 +73,16 @@ calculate_quantile <- function(gs,
 #' concatenated and the quantile calculated using all of the data.
 #'
 #' @param gs GatingSet, GatingHierarchy, flowSet, flowFrame, cytoset or cytoframe object
-#' @param channels Character vector specifying the channels (column names) in gs to calculate the range for (default: all channels)
+#' @param channels Character vector or list specifying the channels (column names) in gs to calculate the range for (default: all channels)
 #' @param parentId Optional name of gate to use to filter data before calculating quantile. Only used when a GatingSet or GatingHierarchy is provided
 #' @returns A named list of range values
 #' @examples
 #' \dontrun{
-#' # Calculate range values for the CD4 channels using a flowSet, flowFrame, cytoset, or cytoframe
+#' # Calculate range values for the CD4 channels using a flowSet
 #' r <- calculate_range(fs, "CD4")
 #'
-#' # Calculate range values for the CD4 channels using a GatingSet or GatingHierarchy by filtering for "Live" cells first
+#' # Calculate range values for the CD4 channels using a GatingSet
+#' # by filtering for "Live" cells first
 #' r <- calculate_range(gs, "CD4", parentId = "Live")
 #' }
 #' @import flowCore
@@ -109,7 +111,7 @@ calculate_range <- function(gs,
   }else{
     expr_mat <- exprs(gs)
   }
-  # Calculate quantile for given channels
+  # Calculate range for given channels
   if (!is.null(channels)){
     # Validate channel name exist
     if (!all(channels %in% colnames(gs))){

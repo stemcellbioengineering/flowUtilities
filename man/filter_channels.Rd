@@ -2,16 +2,27 @@
 % Please edit documentation in R/utils.R
 \name{filter_channels}
 \alias{filter_channels}
-\title{Filter channels (column names) in flowSet using regular expressions.}
+\title{Filter channels in set using regular expressions.}
 \usage{
-filter_channels(fs, keep = NULL, exclude = NULL, verbose = TRUE)
+filter_channels(
+  fs,
+  keep = NULL,
+  exclude = NULL,
+  filter_scatter = FALSE,
+  ignore_case = TRUE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{fs}{The flowSet, flowFrame, cytoset, or cytoframe object}
 
-\item{keep}{A regular expression used to select channels to keep in the flowSet.}
+\item{keep}{A regular expression used to select channels to keep in the set}
 
-\item{exclude}{A regular expression used to select channels to remove from the flowSet.}
+\item{exclude}{A regular expression used to select channels to remove from the set}
+
+\item{filter_scatter}{Whether to allow filtering of scatter channels. When TRUE, the FSC/SSC channels can be removed from the set (default: FALSE)}
+
+\item{ignore_case}{Whether to ignore case in the regular expression such that "fl1-a" matches "FL1-A" etc (default: TRUE)}
 
 \item{verbose}{Whether to print the remaining channels (default: TRUE)}
 }
@@ -19,7 +30,7 @@ filter_channels(fs, keep = NULL, exclude = NULL, verbose = TRUE)
 The filtered flowSet.
 }
 \description{
-Filter channels (column names) in flowSet using regular expressions.
+Filter channels in set using regular expressions.
 }
 \examples{
 \dontrun{

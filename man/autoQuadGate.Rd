@@ -33,7 +33,7 @@ autoQuadGate(
 \item{gateId}{Character specifying the name for the gate that is returned}
 }
 \value{
-A list containing a \link[flowCore:quadGate-class]{flowCore::quadGate} object accessible via $gate and a character vector of quadrant names accessible via $names.
+A \link[flowCore:quadGate-class]{flowCore::quadGate} object
 }
 \description{
 Constructs a quadrant gate after estimating the quantiles from controls.
@@ -44,9 +44,14 @@ control for calculating the quantile. The controls are usually fluorescent minus
 \examples{
 \dontrun{
 # Construct gates after filtering by existing "Live" gate
-gate <- autoQuadGate(gs, x = "CD4", y = "CD8", parentId = "Live", gateId = "T cells")
+gate <- autoQuadGate(gs, x = "CD4", y = "CD8", parentId = "Live")
+
+# A quadGate becomes four rectangleGate when added to a GatingSet
+# The names will be created automatically or, we can specify the names
+# when adding to GatingSet (order is clockwise from upper left)
+names <- c("CD4-CD8+","CD4+CD8+","CD4+CD8-","CD4-CD8-")
 
 # Add gate to GatingSet
-gs_pop_add(gs, gate$gate, parent = "Singlets", names = gate$names)
+gs_pop_add(gs, gate, parent = "Live", names = names)
 }
 }

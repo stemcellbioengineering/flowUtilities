@@ -2,16 +2,17 @@
 % Please edit documentation in R/plots.R
 \name{plot_grid}
 \alias{plot_grid}
-\title{Plot a grid of samples in a GatingSet.}
+\title{Plot multiple samples in a GatingSet in a grid.}
 \usage{
 plot_grid(
   gs,
   x,
   y = NULL,
   gate = NULL,
-  limits = "data",
+  limits = "auto",
   subset = "root",
   facet_by = NULL,
+  labels = "channel",
   n_bins = 128,
   ncol = 3,
   fill_density = "gray",
@@ -31,11 +32,13 @@ plot_grid(
 
 \item{gate}{A gate or gate name to plot (default: no gates plotted)}
 
-\item{limits}{Plot limits: "auto", "data", "instrument", a list("x"=c(min, max), "y"=c(min, max)), a numeric vector of quantile values}
+\item{limits}{Plot limits: "auto", "data", "instrument" (default: "auto")}
 
 \item{subset}{A gate to filter data before plotting (default: "root)}
 
 \item{facet_by}{A column in phenoData to use to facet plots}
+
+\item{labels}{Axis labels "channel", "marker", or "both" (default: "channel")}
 
 \item{n_bins}{Number of hexagon bins for 2D plots (default: 128)}
 
@@ -57,5 +60,5 @@ plot_grid(
 A ggcyto or ggplot2 plot object
 }
 \description{
-Plot a grid of samples in a GatingSet.
+Plot multiple samples in a GatingSet in a grid.
 }

@@ -52,7 +52,11 @@ Additionally, when a GatingSet is provided, the singlet gate can be constructed 
 \examples{
 \dontrun{
 # Construct gates after filtering by existing "NonDebris" gate
-gates <- autoSingletGate(gs, area = "FSC-A", height = "FSC-H", parentId = "NonDebris", gateId = "Singlets")
+gates <- autoSingletGate(gs,
+                         area = "FSC-A",
+                         height = "FSC-H",
+                         parentId = "NonDebris",
+                         gateId = "Singlets")
 
 # Add gate to GatingSet
 gs_pop_add(gs, gates, parent = "NonDebris")

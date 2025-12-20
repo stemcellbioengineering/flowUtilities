@@ -1,0 +1,6 @@
+^renv$
+^renv\.lock$
+^flowUtilities\.Rproj$
+^\.Rproj\.user$
+^README\.Rmd$
+^vignettes/intro_to_flowutilities\.pdf$

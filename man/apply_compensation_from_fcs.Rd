@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{apply_compensation_from_fcs}
 \alias{apply_compensation_from_fcs}
-\title{Apply compensation from spill matrices in provided in .fcs files.
+\title{Apply compensation from spill matrices provided in .fcs files.
 Compensation should be applied before transforming data and before renaming or filtering channels.}
 \usage{
 apply_compensation_from_fcs(fs)
@@ -14,6 +14,6 @@ apply_compensation_from_fcs(fs)
 The flowSet with compensation applied.
 }
 \description{
-Apply compensation from spill matrices in provided in .fcs files.
+Apply compensation from spill matrices provided in .fcs files.
 Compensation should be applied before transforming data and before renaming or filtering channels.
 }
