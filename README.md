@@ -15,7 +15,8 @@ import, gating, visualization, and statistical analysis.
 
 ## Installation
 
-You can install `flowUtilities` from GitHub:
+After installing all dependencies from Bioconductor, the `flowUtilities`
+package can be installed from GitHub:
 
 ``` r
 # install.packages("devtools")
@@ -33,18 +34,13 @@ if (!require("BiocManager", quietly = TRUE))
 BiocManager::install(c("flowCore", "flowWorkspace", "flowStats", "ggcyto"))
 ```
 
-These should be installed before installing `flowUtilities`.
-
 ## Documentation
 
-For a complete workflow example, see the package vignette:
+For a workflow example, see the package vignette:
 
 ``` r
 browseVignettes("flowUtilities")
 ```
-
-An `.html` format on Github can be viewed by appending the vignette url
-to <http://htmlpreview.github.io/>?
 
 ## Contributions
 
