@@ -36,11 +36,11 @@ read_names_to_pdata <- function(fs, ...){
   pd <- pData(fs)
   # Search for each key in pData
   for (key in names(search_terms)){
-   res <- lapply(pd, function(x) str_extract(x, pattern=search_terms[[key]]))
+   res <- sapply(rownames(pd), function(x) str_extract(x, pattern=search_terms[[key]]))
 
-   if (any(is.na(res$name))) warning(sprintf("Could not find a match for %s=%s in all filenames.",key, search_terms[[key]]))
+   if (all(is.na(res))) warning(sprintf("Could not find a match for %s = '%s'",key, search_terms[[key]]))
    # Add new column
-   pd[[key]] <- res$name
+   pd[[key]] <- res
   }
   # Update in fs
   pData(fs) <- pd
