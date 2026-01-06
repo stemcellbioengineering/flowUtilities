@@ -18,7 +18,7 @@
 #' @param margin_units Margin units (default: "cm")
 #' @param device_font Loads font libraries from the users computer. See the [extrafont::loadfonts] documentation for details
 #' @returns A ggplot2 theme object
-#' @import ggplot2
+#' @importFrom ggplot2 theme_bw theme margin element_rect element_blank element_line element_text
 #' @export
 plot_theme <- function(font_size=10,
                        font_family="sans",
@@ -74,7 +74,8 @@ plot_theme <- function(font_size=10,
 #' @importFrom ggcyto ggcyto as.ggplot ggcyto_par_set labs_cyto
 #' @importFrom ggridges geom_density_ridges
 #' @importFrom gridExtra grid.arrange
-#' @import ggplot2
+#' @importFrom ggplot2 ggplot aes facet_null element_blank
+#' @importFrom rlang sym !!
 #' @export
 plot_stacked_hist <- function(gs,
                               channels,
@@ -155,7 +156,8 @@ plot_stacked_hist <- function(gs,
 #' @import flowWorkspace
 #' @importFrom ggcyto ggcyto ggcyto_par_set geom_gate labs_cyto geom_stats
 #' @importFrom stats as.formula
-#' @import ggplot2
+#' @importFrom ggplot2 ggplot aes facet_wrap geom_hex geom_density
+#' @importFrom rlang sym !!
 #' @export
 plot_grid <- function(gs,
                       x,
@@ -271,8 +273,9 @@ plot_grid <- function(gs,
 #' }
 #' @import flowWorkspace
 #' @importFrom gridExtra grid.arrange arrangeGrob
-#' @import ggplot2
 #' @importFrom ggcyto ggcyto ggcyto_par_set geom_gate labs_cyto geom_stats as.ggplot
+#' @importFrom ggplot2 ggplot aes facet_wrap geom_hex geom_density element_blank labs ggsave
+#' @importFrom rlang sym !!
 #' @export
 plot_gating_hierarchy <- function(gs,
                                   output_dir = NULL,
@@ -433,7 +436,7 @@ plot_gating_hierarchy <- function(gs,
 
         # Remove axis ticks if desired
         if (remove_axis_ticks){
-          p <- p + theme(axis.text.x = element_blank(),axis.text.y = element_blank(), axis.ticks = element_blank())
+          p <- p + theme(axis.text.x = element_blank(), axis.text.y = element_blank(), axis.ticks = element_blank())
         }
         # Make ggplot and add to list
         plot_list[[j]] <- as.ggplot(p)
@@ -549,8 +552,9 @@ plot_gating_hierarchy <- function(gs,
 #' }
 #' @import flowWorkspace
 #' @importFrom gridExtra grid.arrange arrangeGrob
-#' @import ggplot2
 #' @importFrom ggcyto ggcyto ggcyto_par_set geom_gate geom_overlay labs_cyto as.ggplot
+#' @importFrom ggplot2 ggplot aes facet_wrap geom_density geom_point element_blank labs ggsave
+#' @importFrom rlang sym !!
 #' @export
 plot_backgating <- function(gs,
                             gate,

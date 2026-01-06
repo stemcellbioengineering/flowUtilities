@@ -211,7 +211,7 @@ autoQuadGate <- function(gs,
                              probs = probs)
   # Merge quantiles
   quantiles <- c(qt_x, qt_y)
-  print(quantiles)
+
   # Build gate
   gate <- quadGate(quantiles, filterId = gateId)
 

@@ -383,7 +383,7 @@ flatten_to_cytoframe <- function(cs){
   expr_mat <- fsApply(cs, function(cf) exprs(cf), simplify = FALSE)
   # Combine by row into one matrix
   expr_mat <- do.call(rbind, expr_mat)
-  # Make into flowframe and return
+  # Make into cytoframe and return
   return (cytoframe(expr_mat))
 }
 
