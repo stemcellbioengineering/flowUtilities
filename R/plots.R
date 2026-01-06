@@ -350,8 +350,6 @@ plot_gating_hierarchy <- function(gs,
     plot_list_all <- NULL
   }
 
-  #message(sprintf("Processing %d sample(s)...", n_samples))
-
   # Get all nodes (gates) in the hierarchy, excluding root
   nodes <- gs_get_pop_paths(gs, path = "auto")
   nodes <- nodes[nodes != "root"]
@@ -361,12 +359,11 @@ plot_gating_hierarchy <- function(gs,
     return(invisible(NULL))
   }
 
-  #message(sprintf("Found %d gate(s) in hierarchy", length(nodes)))
-
   # Process each sample
   for (i in seq_along(sample_names)) {
+    message(sprintf("Processing %d/%d", i, n_samples), appendLF=FALSE)
+
     sample_name <- sample_names[i]
-    #message(sprintf("Processing %d/%d: %s", i, n_samples, sample_name), appendLF=FALSE)
 
     # Extract the GatingHierarchy for this sample
     gh <- gs[[sample_name]]
@@ -493,16 +490,15 @@ plot_gating_hierarchy <- function(gs,
                width=width,
                height=height,
                units="cm")
-        #message(" - saved", appendLF=TRUE)
       # Else store in list to return
       }else{
         plot_list_all[[i]] <- p
-        #message(" - done", appendLF=TRUE)
       }
     }, error = function(e) {
       stop(sprintf(" - failed to save: %s", e$message), appendLF=TRUE)
     })
   }
+  message(" - done", appendLF=TRUE)
 
   # Merge list of plots into a single plot
   if (!is.null(plot_list_all)){
@@ -553,7 +549,7 @@ plot_gating_hierarchy <- function(gs,
 #' @import flowWorkspace
 #' @importFrom gridExtra grid.arrange arrangeGrob
 #' @importFrom ggcyto ggcyto ggcyto_par_set geom_gate geom_overlay labs_cyto as.ggplot
-#' @importFrom ggplot2 ggplot aes facet_wrap geom_density geom_point element_blank labs ggsave
+#' @importFrom ggplot2 ggplot aes geom_density geom_point element_blank labs ggsave
 #' @importFrom rlang sym !!
 #' @export
 plot_backgating <- function(gs,
@@ -630,7 +626,7 @@ plot_backgating <- function(gs,
   # Process each sample
   for (i in seq_along(sample_names)) {
     sample_name <- sample_names[i]
-    #message(sprintf("Processing %d/%d: %s", i, n_samples, sample_name), appendLF=FALSE)
+    message(sprintf("Processing %d/%d", i, n_samples), appendLF=FALSE)
 
     # Extract the GatingHierarchy for this sample
     gh <- gs[[sample_name]]
@@ -777,16 +773,17 @@ plot_backgating <- function(gs,
                width=width,
                height=height,
                units="cm")
-        #message(" - saved", appendLF=TRUE)
         # Else store in list to return
       }else{
         plot_list_all[[i]] <- p
-        #message(" - done", appendLF=TRUE)
+
       }
     }, error = function(e) {
       stop(sprintf(" - failed to save: %s", e$message), appendLF=TRUE)
     })
   }
+  message(" - done", appendLF=TRUE)
+
   # Merge list of plots into a single plot
   if (!is.null(plot_list_all)){
     # Arrange grid plots in grid
