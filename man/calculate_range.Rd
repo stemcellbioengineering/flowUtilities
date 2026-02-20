@@ -2,7 +2,7 @@
 % Please edit documentation in R/stats.R
 \name{calculate_range}
 \alias{calculate_range}
-\title{Calculates the range (min, max) for a given channel (column).}
+\title{Calculates the range (min, max) for a given channel}
 \usage{
 calculate_range(gs, channels = NULL, parentId = "root")
 }
@@ -19,7 +19,7 @@ A named list of range values
 \description{
 Compatible with GatingSet, GatingHierarchy, flowSet, flowFrame, cytoset, and cytoframe objects.
 If a GatingSet, flowSet or cytoset is provided containing multiple samples, all data is
-concatenated and the quantile calculated using all of the data.
+concatenated and the range calculated using all of the data.
 }
 \examples{
 \dontrun{

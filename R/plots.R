@@ -359,9 +359,15 @@ plot_gating_hierarchy <- function(gs,
     return(invisible(NULL))
   }
 
+  if (limits == "auto"){
+    # Initialize empty list to store limits
+    limits <- vector("list",length(nodes))
+    names(limits) <- nodes
+  }
+
   # Process each sample
   for (i in seq_along(sample_names)) {
-    message(sprintf("Processing %d/%d", i, n_samples), appendLF=FALSE)
+    message(sprintf("Processing %d/%d", i, n_samples))
 
     sample_name <- sample_names[i]
 
@@ -398,13 +404,20 @@ plot_gating_hierarchy <- function(gs,
           }
         }
         # Set auto limits for gate
-        if (limits == "auto"){
-          lim <- calculate_range(gs, channels = params, parentId = parent_node)
-          # Format as list(x=c(min,max),...)
-          if (length(params)==1){
-            plot_limits <- list(x = lim[[params[[1]]]])
+        if (inherits(limits,"list")){
+          # Calculate once and store for later
+          if (is.null(limits[[node]])){
+            lim <- calculate_range(gs, channels = params, parentId = parent_node)
+            # Format as list(x=c(min,max),...)
+            if (length(params)==1){
+              plot_limits <- list(x = lim[[params[[1]]]])
+            }else{
+              plot_limits <- list(x = lim[[params[[1]]]], y = lim[[params[[2]]]])
+            }
+            limits[[node]] <- plot_limits
+          # Else use already calculated
           }else{
-            plot_limits <- list(x = lim[[params[[1]]]], y = lim[[params[[2]]]])
+            plot_limits <- limits[[node]]
           }
         # Else let ggcyto set limits (data or instrument)
         }else{
@@ -498,7 +511,7 @@ plot_gating_hierarchy <- function(gs,
       stop(sprintf(" - failed to save: %s", e$message), appendLF=TRUE)
     })
   }
-  message(" - done", appendLF=TRUE)
+  #message(" - done", appendLF=TRUE)
 
   # Merge list of plots into a single plot
   if (!is.null(plot_list_all)){
@@ -622,6 +635,24 @@ plot_backgating <- function(gs,
   }else{
     plot_list_all <- NULL
   }
+
+
+  # ## TO DO: set plot limits once per node
+  # # Get all nodes (gates) in the hierarchy, excluding root
+  # nodes <- gs_get_pop_paths(gs, path = "auto")
+  # nodes <- nodes[nodes != "root"]
+  #
+  # if (length(nodes) == 0) {
+  #   warning("No gates found in the GatingSet (only root node exists)")
+  #   return(invisible(NULL))
+  # }
+  #
+  # if (limits == "auto"){
+  #   # Initialize empty list to store limits
+  #   limits <- vector("list",length(nodes))
+  #   names(limits) <- nodes
+  # }
+
 
   # Process each sample
   for (i in seq_along(sample_names)) {

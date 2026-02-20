@@ -1,7 +1,7 @@
 Package: flowUtilities
 Type: Package
 Title: Utility Functions for Flow Cytometry Analysis Using flowWorkspace
-Version: 1.0.3
+Version: 1.0.4
 Authors@R: 
     person("John", "Edgar", email="edgarjohnmichael@gmail.com", role = c("aut", "cre"))
 Description: flowUtilities is an R package that simplifies flow cytometry data

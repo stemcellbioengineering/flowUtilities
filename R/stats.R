@@ -66,11 +66,11 @@ calculate_quantile <- function(gs,
   return(quantiles)
 }
 
-#' Calculates the range (min, max) for a given channel (column).
+#' Calculates the range (min, max) for a given channel
 #'
 #' Compatible with GatingSet, GatingHierarchy, flowSet, flowFrame, cytoset, and cytoframe objects.
 #' If a GatingSet, flowSet or cytoset is provided containing multiple samples, all data is
-#' concatenated and the quantile calculated using all of the data.
+#' concatenated and the range calculated using all of the data.
 #'
 #' @param gs GatingSet, GatingHierarchy, flowSet, flowFrame, cytoset or cytoframe object
 #' @param channels Character vector or list specifying the channels (column names) in gs to calculate the range for (default: all channels)
